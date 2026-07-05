@@ -19,6 +19,7 @@ from src.data_profiler import (
     quality_warnings,
     total_missing,
 )
+from src.report_exporter import build_report
 
 st.set_page_config(page_title="DataScrub", page_icon="🧹", layout="wide")
 
@@ -130,3 +131,12 @@ else:
 
     if not numeric_cols and not categorical_cols and not datetime_cols:
         st.info("No columns available to chart.")
+
+    st.subheader("Excel Report")
+    report_bytes = build_report(df, cleaned_df, cleaned_column_types)
+    st.download_button(
+        "Download Excel report",
+        data=report_bytes,
+        file_name="datascrub_report.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
