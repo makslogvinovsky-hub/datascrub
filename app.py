@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from src.cleaner import MISSING_VALUE_STRATEGIES, clean_data
 from src.data_loader import load_file
 from src.data_profiler import (
     detect_column_types,
@@ -65,3 +66,26 @@ else:
         st.markdown("**Warnings**")
         for warning in warnings:
             st.warning(warning)
+
+    st.subheader("Data Cleaning")
+    remove_duplicates = st.checkbox("Remove duplicate rows", value=True)
+    missing_strategy = st.selectbox("Missing value strategy", MISSING_VALUE_STRATEGIES)
+
+    cleaned_df, clean_summary = clean_data(df, remove_duplicates, missing_strategy)
+
+    st.markdown(
+        f"**Rows:** {clean_summary['rows_before']} → {clean_summary['rows_after']}  \n"
+        f"**Duplicates removed:** {clean_summary['duplicates_removed']}  \n"
+        f"**Rows dropped (missing values):** {clean_summary['rows_dropped_missing']}  \n"
+        f"**Cells filled:** {clean_summary['cells_filled']}"
+    )
+
+    st.markdown("**Cleaned data preview**")
+    st.dataframe(cleaned_df.head(20), use_container_width=True)
+
+    st.download_button(
+        "Download cleaned data (CSV)",
+        data=cleaned_df.to_csv(index=False).encode("utf-8"),
+        file_name="cleaned_data.csv",
+        mime="text/csv",
+    )
