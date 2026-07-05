@@ -7,6 +7,7 @@ from src.data_profiler import (
     detect_column_types,
     duplicate_summary,
     missing_value_summary,
+    numeric_statistics,
     quality_warnings,
     total_missing,
 )
@@ -89,3 +90,11 @@ else:
         file_name="cleaned_data.csv",
         mime="text/csv",
     )
+
+    st.subheader("Basic Statistics")
+    cleaned_column_types = detect_column_types(cleaned_df)
+    stats_df = numeric_statistics(cleaned_df, cleaned_column_types)
+    if stats_df.empty:
+        st.info("No numeric columns available for statistics.")
+    else:
+        st.dataframe(stats_df, use_container_width=True)

@@ -74,6 +74,16 @@ def duplicate_summary(df: pd.DataFrame) -> dict:
     }
 
 
+def numeric_statistics(df: pd.DataFrame, column_types: dict) -> pd.DataFrame:
+    """Basic descriptive statistics (count, mean, std, min/max, quartiles) for
+    numeric columns only. Returns an empty DataFrame if there are none."""
+    numeric_cols = [c for c, t in column_types.items() if t == NUMERIC]
+    if not numeric_cols:
+        return pd.DataFrame()
+    coerced = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
+    return coerced.describe().round(2)
+
+
 def quality_warnings(df: pd.DataFrame, column_types: dict) -> list:
     """Simple, human-readable warnings about problematic columns."""
     warnings = []
