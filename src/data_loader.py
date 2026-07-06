@@ -21,19 +21,30 @@ DECIMAL_COMMA_PATTERN = re.compile(r"(?<=\d),(?=\d)")
 ENCODING_CANDIDATES = ["utf_8", "cp1250", "cp1251", "iso-8859-1"]
 
 
-def load_file(uploaded_file) -> pd.DataFrame:
+def load_file(uploaded_file, sheet_name: str | None = None) -> pd.DataFrame:
     """Load an uploaded .csv or .xlsx file into a DataFrame. Column names are
     stripped of surrounding whitespace. Returns an empty DataFrame if the
-    file has no readable content."""
+    file has no readable content. `sheet_name` selects a sheet for .xlsx
+    files; ignored for .csv. If None, the first sheet is used."""
     name = uploaded_file.name.lower()
     if name.endswith(".csv"):
         df = _load_csv(uploaded_file)
     elif name.endswith(".xlsx"):
-        df = _load_excel(uploaded_file)
+        df = _load_excel(uploaded_file, sheet_name)
     else:
         raise ValueError(f"Unsupported file type: {uploaded_file.name}. Only .csv and .xlsx are supported.")
     df.columns = [str(c).strip() for c in df.columns]
     return df
+
+
+def get_excel_sheet_names(uploaded_file) -> list[str] | None:
+    """Return the sheet names of an uploaded .xlsx file, or None if the file
+    is not an .xlsx (e.g. a .csv)."""
+    if not uploaded_file.name.lower().endswith(".xlsx"):
+        return None
+    uploaded_file.seek(0)
+    with pd.ExcelFile(uploaded_file, engine="openpyxl") as excel_file:
+        return excel_file.sheet_names
 
 
 def _load_csv(uploaded_file) -> pd.DataFrame:
@@ -95,9 +106,10 @@ def _detect_encoding(raw_bytes: bytes) -> str:
     return match.encoding
 
 
-def _load_excel(uploaded_file) -> pd.DataFrame:
+def _load_excel(uploaded_file, sheet_name: str | None = None) -> pd.DataFrame:
+    uploaded_file.seek(0)
     try:
-        return pd.read_excel(uploaded_file, engine="openpyxl")
+        return pd.read_excel(uploaded_file, sheet_name=sheet_name or 0, engine="openpyxl")
     except ValueError:
         return pd.DataFrame()
 

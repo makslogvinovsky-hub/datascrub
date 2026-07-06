@@ -7,7 +7,7 @@ from src.charts import (
     render_top_categories_chart,
 )
 from src.cleaner import MISSING_VALUE_STRATEGIES, clean_data
-from src.data_loader import load_file
+from src.data_loader import get_excel_sheet_names, load_file
 from src.data_profiler import (
     CATEGORICAL,
     DATETIME,
@@ -31,11 +31,19 @@ uploaded_file = st.file_uploader("Upload a file", type=["csv", "xlsx"])
 if uploaded_file is None:
     st.info("Upload a .csv or .xlsx file to get started.")
 else:
+    sheet_names = get_excel_sheet_names(uploaded_file)
+    selected_sheet = sheet_names[0] if sheet_names else None
+    if sheet_names and len(sheet_names) > 1:
+        selected_sheet = st.selectbox("Sheet", sheet_names)
+
     try:
-        df = load_file(uploaded_file)
+        df = load_file(uploaded_file, sheet_name=selected_sheet)
     except ValueError as e:
         st.error(str(e))
         st.stop()
+
+    if selected_sheet is not None:
+        st.info(f"Loaded sheet: **{selected_sheet}**")
 
     if df.shape[1] == 0:
         st.warning("The uploaded file appears to be empty.")

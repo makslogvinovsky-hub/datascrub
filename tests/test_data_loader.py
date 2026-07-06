@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.data_loader import load_file
+from src.data_loader import get_excel_sheet_names, load_file
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 
@@ -71,3 +71,35 @@ def test_empty_csv_returns_empty_dataframe():
 def test_header_only_csv_returns_zero_rows():
     df = load_file(FakeUpload("a,b\n".encode("utf-8"), "headers.csv"))
     assert df.shape == (0, 2)
+
+
+def _build_multi_sheet_xlsx() -> bytes:
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        pd.DataFrame({"a": [1, 2]}).to_excel(writer, sheet_name="First", index=False)
+        pd.DataFrame({"b": [3, 4, 5]}).to_excel(writer, sheet_name="Second", index=False)
+    return buffer.getvalue()
+
+
+def test_get_excel_sheet_names_returns_none_for_csv():
+    df_upload = FakeUpload(b"a,b\n1,2\n", "plain.csv")
+    assert get_excel_sheet_names(df_upload) is None
+
+
+def test_get_excel_sheet_names_lists_all_sheets():
+    upload = FakeUpload(_build_multi_sheet_xlsx(), "multi.xlsx")
+    assert get_excel_sheet_names(upload) == ["First", "Second"]
+
+
+def test_load_file_defaults_to_first_sheet():
+    upload = FakeUpload(_build_multi_sheet_xlsx(), "multi.xlsx")
+    df = load_file(upload)
+    assert list(df.columns) == ["a"]
+    assert df.shape == (2, 1)
+
+
+def test_load_file_selects_requested_sheet():
+    upload = FakeUpload(_build_multi_sheet_xlsx(), "multi.xlsx")
+    df = load_file(upload, sheet_name="Second")
+    assert list(df.columns) == ["b"]
+    assert df.shape == (3, 1)
