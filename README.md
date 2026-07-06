@@ -7,6 +7,8 @@
 
 Upload messy Excel — get clean data and instant insights.
 
+**[Try the live demo](https://datascrub-vwaxjytmyc838t3fbntnqf.streamlit.app)**
+
 ## Overview
 
 DataScrub is a single-page Streamlit app that turns a messy `.csv` or `.xlsx`
