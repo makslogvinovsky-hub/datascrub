@@ -84,8 +84,17 @@ report export sections.
 
 ## Screenshots
 
-_Screenshots will be added here once the app has been run against the demo
-datasets — see `assets/screenshots/`._
+![Upload and preview](assets/screenshots/01_upload_preview.png)
+*Upload a file and preview its contents and detected column types.*
+
+![Data quality summary](assets/screenshots/02_data_quality.png)
+*Data quality summary — missing values, duplicates, and warnings.*
+
+![Cleaning](assets/screenshots/03_cleaning.png)
+*Cleaning controls with a summary of rows removed and cells filled.*
+
+![Statistics and charts](assets/screenshots/04_statistics_charts.png)
+*Basic statistics and charts for numeric, categorical, and date columns.*
 
 ## Project Structure
 
