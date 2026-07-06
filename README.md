@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![Streamlit](https://img.shields.io/badge/streamlit-1.38%2B-FF4B4B?logo=streamlit&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+![Tests](https://github.com/makslogvinovsky-hub/datascrub/actions/workflows/tests.yml/badge.svg)
 
 Upload messy Excel — get clean data and instant insights.
 
