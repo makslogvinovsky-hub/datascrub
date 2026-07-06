@@ -105,14 +105,19 @@ datascrub/
 │   └── report_exporter.py     # multi-sheet Excel report builder
 ├── tests/
 │   ├── test_data_profiler.py
-│   └── test_cleaner.py
+│   ├── test_cleaner.py
+│   ├── test_data_loader.py
+│   └── fixtures/               # real messy CSVs used in loader regression tests
 └── assets/screenshots/
 ```
 
 ## Testing
 
 Tests cover the data-processing logic only (`src/data_profiler.py`,
-`src/cleaner.py`) using plain in-memory DataFrames — no Streamlit UI tests.
+`src/cleaner.py`, `src/data_loader.py`) using plain in-memory DataFrames —
+no Streamlit UI tests. `test_data_loader.py` includes delimiter and encoding
+detection, with regression fixtures for real semicolon-delimited cp1250
+(Polish) and cp1251 (Cyrillic) CSVs, plus multi-sheet Excel selection.
 
 ```bash
 pytest
