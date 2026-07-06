@@ -68,3 +68,46 @@ def test_rows_summary_reflects_before_and_after():
     cleaned, summary = clean_data(df, remove_duplicates=True, missing_strategy=STRATEGY_DROP)
     assert summary["rows_before"] == 4
     assert summary["rows_after"] == len(cleaned)
+
+
+def test_normalize_text_strips_and_title_cases_categorical_column():
+    df = pd.DataFrame({"region": ["CENTRAL", "central ", "Central", "North"]})
+    cleaned, summary = clean_data(
+        df, remove_duplicates=False, missing_strategy=STRATEGY_LEAVE, normalize_text=True
+    )
+    assert list(cleaned["region"]) == ["Central", "Central", "Central", "North"]
+    assert summary["normalized_cells"] == 2
+
+
+def test_normalize_text_disabled_by_default():
+    df = pd.DataFrame({"region": ["CENTRAL", "central "]})
+    cleaned, summary = clean_data(df, remove_duplicates=False, missing_strategy=STRATEGY_LEAVE)
+    assert list(cleaned["region"]) == ["CENTRAL", "central "]
+    assert summary["normalized_cells"] == 0
+
+
+def test_normalize_text_ignores_numeric_columns():
+    df = pd.DataFrame({"amount": [1, 2, 3]})
+    cleaned, summary = clean_data(
+        df, remove_duplicates=False, missing_strategy=STRATEGY_LEAVE, normalize_text=True
+    )
+    assert list(cleaned["amount"]) == [1, 2, 3]
+    assert summary["normalized_cells"] == 0
+
+
+def test_normalize_text_leaves_missing_values_untouched():
+    df = pd.DataFrame({"region": ["CENTRAL", None, "north"]})
+    cleaned, summary = clean_data(
+        df, remove_duplicates=False, missing_strategy=STRATEGY_LEAVE, normalize_text=True
+    )
+    assert cleaned["region"].isna().sum() == 1
+    assert summary["normalized_cells"] == 2
+
+
+def test_normalize_text_merges_case_variants_before_dedup():
+    df = pd.DataFrame({"region": ["CENTRAL", "central ", "Central"]})
+    cleaned, summary = clean_data(
+        df, remove_duplicates=True, missing_strategy=STRATEGY_LEAVE, normalize_text=True
+    )
+    assert len(cleaned) == 1
+    assert summary["duplicates_removed"] == 2

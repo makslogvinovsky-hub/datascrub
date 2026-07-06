@@ -28,10 +28,12 @@ spreadsheet — rather than a tutorial demo.
 - **Data quality summary** — missing values per column and in total,
   duplicate row count and percentage, and plain-language warnings for
   problematic columns (high missing %, mixed types, constant values).
-- **Cleaning workflow** — optionally remove duplicate rows and choose a
+- **Cleaning workflow** — optionally remove duplicate rows, choose a
   missing-value strategy (leave as is, drop rows, or fill numeric columns
-  with the median / text columns with `"Unknown"`), with a transparent
-  before/after summary. Download the cleaned data as CSV.
+  with the median / text columns with `"Unknown"`), and optionally normalize
+  text columns (trims whitespace and unifies casing to title case, so
+  `"CENTRAL"`, `"central "`, and `"Central"` merge into one category), with
+  a transparent before/after summary. Download the cleaned data as CSV.
 - **Basic statistics** — descriptive statistics (count, mean, std, quartiles)
   for numeric columns.
 - **Charts** — numeric distribution histogram, top categories bar chart, and

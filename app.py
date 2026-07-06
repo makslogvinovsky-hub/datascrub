@@ -88,14 +88,16 @@ else:
     st.subheader("Data Cleaning")
     remove_duplicates = st.checkbox("Remove duplicate rows", value=True)
     missing_strategy = st.selectbox("Missing value strategy", MISSING_VALUE_STRATEGIES)
+    normalize_text = st.checkbox("Normalize text columns", value=False)
 
-    cleaned_df, clean_summary = clean_data(df, remove_duplicates, missing_strategy)
+    cleaned_df, clean_summary = clean_data(df, remove_duplicates, missing_strategy, normalize_text)
 
     st.markdown(
         f"**Rows:** {clean_summary['rows_before']} → {clean_summary['rows_after']}  \n"
         f"**Duplicates removed:** {clean_summary['duplicates_removed']}  \n"
         f"**Rows dropped (missing values):** {clean_summary['rows_dropped_missing']}  \n"
-        f"**Cells filled:** {clean_summary['cells_filled']}"
+        f"**Cells filled:** {clean_summary['cells_filled']}  \n"
+        f"**Cells normalized:** {clean_summary['normalized_cells']}"
     )
 
     st.markdown("**Cleaned data preview**")

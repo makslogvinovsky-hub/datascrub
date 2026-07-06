@@ -1,9 +1,9 @@
-"""Data cleaning operations: duplicate removal and missing-value handling,
-with a transparent summary of what changed."""
+"""Data cleaning operations: text normalization, duplicate removal, and
+missing-value handling, with a transparent summary of what changed."""
 
 import pandas as pd
 
-from src.data_profiler import NUMERIC, detect_column_types
+from src.data_profiler import CATEGORICAL, NUMERIC, detect_column_types
 
 STRATEGY_LEAVE = "Leave as is"
 STRATEGY_DROP = "Drop rows with missing values"
@@ -12,14 +12,37 @@ STRATEGY_FILL = 'Fill missing (median for numeric, "Unknown" for text)'
 MISSING_VALUE_STRATEGIES = [STRATEGY_LEAVE, STRATEGY_DROP, STRATEGY_FILL]
 
 
-def clean_data(df: pd.DataFrame, remove_duplicates: bool, missing_strategy: str) -> tuple:
+def _normalize_text_value(value):
+    if pd.isna(value):
+        return value
+    return str(value).strip().title()
+
+
+def clean_data(
+    df: pd.DataFrame,
+    remove_duplicates: bool,
+    missing_strategy: str,
+    normalize_text: bool = False,
+) -> tuple:
     """Apply the selected cleaning steps to df and return (cleaned_df, summary).
 
     summary keys: rows_before, rows_after, duplicates_removed, rows_dropped_missing,
-    cells_filled.
+    cells_filled, normalized_cells.
     """
     cleaned = df.copy()
     rows_before = len(cleaned)
+    column_types = detect_column_types(cleaned)
+
+    normalized_cells = 0
+    if normalize_text:
+        for col, col_type in column_types.items():
+            if col_type != CATEGORICAL:
+                continue
+            original = cleaned[col]
+            normalized = original.map(_normalize_text_value)
+            changed = original.notna() & (original != normalized)
+            normalized_cells += int(changed.sum())
+            cleaned[col] = normalized
 
     duplicates_removed = 0
     if remove_duplicates:
@@ -35,7 +58,6 @@ def clean_data(df: pd.DataFrame, remove_duplicates: bool, missing_strategy: str)
         rows_dropped = before - len(cleaned)
     elif missing_strategy == STRATEGY_FILL:
         cells_filled = int(cleaned.isna().sum().sum())
-        column_types = detect_column_types(cleaned)
         for col in cleaned.columns:
             if not cleaned[col].isna().any():
                 continue
@@ -51,5 +73,6 @@ def clean_data(df: pd.DataFrame, remove_duplicates: bool, missing_strategy: str)
         "duplicates_removed": duplicates_removed,
         "rows_dropped_missing": rows_dropped,
         "cells_filled": cells_filled,
+        "normalized_cells": normalized_cells,
     }
     return cleaned.reset_index(drop=True), summary
