@@ -70,6 +70,37 @@ python scripts/generate_demo_data.py
   uses Streamlit's native charts)
 - Pytest
 
+## Technical Decisions
+
+**Encoding detection uses a deliberately narrow candidate list.** 8-bit
+codepages like `cp1250` and `cp1251` decode almost any byte sequence without
+raising an error, so "first encoding that doesn't raise" silently produces
+mojibake — a Cyrillic file can "successfully" decode as Polish. DataScrub
+uses `charset-normalizer`'s content-aware scoring instead, but restricted via
+`cp_isolation` to `utf_8` / `cp1250` / `cp1251` / `iso-8859-1`. An unrestricted
+search can still pick the wrong codepage: `cp1252` sometimes wins on generic
+letter-frequency grounds while misrendering the specific accented characters
+(e.g. Polish `ł`) this app needs to get right.
+
+**Delimiter detection isn't fooled by decimal commas.** European CSV exports
+mix `;` as the field separator with `,` as a decimal separator (e.g.
+`"1 250,50"`). Naively counting commas would misdetect the delimiter, so
+detection instead looks for whichever candidate (`,`, `;`, tab) has a
+consistent occurrence count across sample lines, with digit-comma-digit
+sequences excluded from the comma count first.
+
+**Large files are sampled for charts and preview only — never for analysis.**
+Quality checks, cleaning, and the Excel report always run on the full
+DataFrame; only rendering (row preview, chart data) draws a fixed-size random
+sample once a dataset exceeds 50,000 rows. This keeps the UI responsive
+without ever silently dropping rows from the numbers that matter.
+
+**`app.py` is a thin UI layer over `src/`.** All parsing, profiling, cleaning,
+and export logic lives in `src/` modules with their own unit tests; `app.py`
+only wires Streamlit widgets to those functions. This keeps the data-
+processing logic testable with plain in-memory DataFrames, independent of
+Streamlit's runtime.
+
 ## Installation
 
 ```bash
