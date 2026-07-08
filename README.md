@@ -186,3 +186,5 @@ Possible future additions, out of scope for this MVP+:
 Built as a focused MVP+: no authentication, no database, no multi-page
 structure, no ML — just a reliable, readable tool for turning messy
 spreadsheets into clean data and quick insights.
+
+Pairs well with [LeadHarvest](https://github.com/makslogvinovsky-hub/leadharvest) — a resume-safe CLI scraper whose Excel output drops straight into DataScrub.
